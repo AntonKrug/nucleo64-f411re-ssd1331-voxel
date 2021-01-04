@@ -7,8 +7,9 @@
 
 #include "drivers/oled_for_c.h"
 
-uint8_t buffer[WIDTH * HEIGHT];
-uint8_t zBuffer[WIDTH];
+
+uint8_t buffer[WIDTH * HEIGHT]  __attribute__ ((aligned));
+uint8_t zBuffer[WIDTH] __attribute__ ((aligned));
 
 
 typedef struct {

@@ -1,5 +1,6 @@
 # Benchmarks
 
+- Aligning buffer does slow down, even when it shouldn't by 0.018% (Debug 43384ms - 43456ms) 
 - Vertical increments does 0.3% improvement (Debug 43376ms - 43447ms)
   - It does align better to the render engine which often writes vertical lines
   - Instead of increment the WIDTH now it can increment just by +1
