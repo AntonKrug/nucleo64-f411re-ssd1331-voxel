@@ -25,9 +25,9 @@ typedef struct {
 
 void lineVertical(uint32_t x, int32_t yBegin, uint32_t yEnd, uint8_t color) {
 	if (yBegin < 0) yBegin = 0; // When start is outside the screen, limit it
-	uint32_t offset = x + (yBegin * WIDTH);
+	uint32_t offset = yBegin |  ( x << HEIGHT_BITS);
 
-	for (uint32_t index = yBegin; index < yEnd; ++index, offset += WIDTH) {
+	for (uint32_t index = yBegin; index < yEnd; ++index, offset++) {
 		buffer[offset] = color;
 	}
 }

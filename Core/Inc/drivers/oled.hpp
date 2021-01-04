@@ -54,7 +54,7 @@ enum Control: uint8_t {
 
 enum Remap: uint8_t {
 	incrementHorizontal = 0x00,
-	incremnetVertical   = 0x01,
+	incrementVertical   = 0x01,
 
 	ramToPinSame        = 0x00,
 	ramToPinInverted    = 0x02,

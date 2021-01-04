@@ -51,7 +51,7 @@ void init() {
 		x += 1;
 	}
 
-	const auto remapSetting = Remap::incrementHorizontal | Remap::ramToPinInverted |
+	const auto remapSetting = Remap::incrementVertical| Remap::ramToPinInverted |
 			Remap::colorRGB | Remap::leftRightSwapOff | Remap::scanMaxTo0 |
 			Remap::oddEvenSplitEnable | Remap::colors256format;
 
