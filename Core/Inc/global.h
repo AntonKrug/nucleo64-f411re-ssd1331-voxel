@@ -5,7 +5,10 @@
 #ifndef INC_GLOBAL_H_
 #define INC_GLOBAL_H_
 
+#include "stm32f4xx_hal.h"
+
 extern SPI_HandleTypeDef hspi3;
+extern UART_HandleTypeDef huart2;
 
 
 #endif /* INC_GLOBAL_H_ */
