@@ -1,5 +1,6 @@
 # Benchmarks
 
+- Badly done DMA transfers speedup by 3.8% (Debug 41797ms - 41869ms, getting from average 36 FPS to 37)
 
 - Instead of adding whole MAP_SIZE on each calculation pre-hardcode it before so less additions will have to be made
   - Slowed down by few ms again (Debug 43386 - 43457ms) 
