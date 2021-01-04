@@ -18,12 +18,11 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include <stdio.h>
-#include "drivers/oled_for_c.h"
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "drivers/oled_for_c.h"
 
 /* USER CODE END Includes */
 
@@ -126,13 +125,16 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+
+    /* USER CODE BEGIN 3 */
 	uint32_t ticksStart = HAL_GetTick();
+
 	uint32_t frames = voxelAnimationSingleLoop();
+
 	uint32_t ticksEnd = HAL_GetTick();
 	uint32_t tickDelta = ticksEnd - ticksStart;
 
 	printf("Delta time of the whole run %lu in %lu frames, FPS=%lu\r\n", tickDelta, frames, (frames*1000) / tickDelta);
-    /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
@@ -263,7 +265,7 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA1_Stream5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 
 }
