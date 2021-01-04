@@ -127,11 +127,11 @@ int main(void)
   {
     /* USER CODE END WHILE */
 	uint32_t ticksStart = HAL_GetTick();
-	voxelAnimationSingleLoop();
+	uint32_t frames = voxelAnimationSingleLoop();
 	uint32_t ticksEnd = HAL_GetTick();
 	uint32_t tickDelta = ticksEnd - ticksStart;
 
-	printf("Delta time of the whole run %lu\r\n", tickDelta);
+	printf("Delta time of the whole run %lu in %lu frames, FPS=%lu\r\n", tickDelta, frames, (frames*1000) / tickDelta);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

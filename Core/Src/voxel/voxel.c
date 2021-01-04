@@ -168,7 +168,7 @@ void renderScreen(Pair32 screen, PairFloat origin, float angle, int32_t altitude
 }
 
 
-void voxelAnimationSingleLoop() {
+uint32_t voxelAnimationSingleLoop() {
 	const Pair32 screenResolution = { WIDTH, HEIGHT };
 	PairFloat cameraNow = infiniteSymbolPath(0.0f);
 	PairFloat cameraNext;
@@ -180,6 +180,7 @@ void voxelAnimationSingleLoop() {
 		buffer[index] = VOXEL_BACKGROUND_COLOR;
 	}
 
+	uint32_t frame = 0;
 	for (float step = 0.0f; step < VOXEL_FULL_CIRCLE_IN_RAD; step += VOXEL_ANIMATION_STEP) {
 		cleanBuffers();
 		uint32_t altitude = calculateAltitude(step, altitudeOld);
@@ -203,6 +204,9 @@ void voxelAnimationSingleLoop() {
 		cameraNow     = cameraNext;
 		pointingToOld = pointingTo;
 		altitudeOld   = altitude;
+		frame++;
 	}
+
+	return frame;
 }
 

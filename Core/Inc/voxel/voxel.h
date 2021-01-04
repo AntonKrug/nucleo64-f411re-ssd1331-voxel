@@ -38,7 +38,7 @@
 #define VOXEL_FULL_CIRCLE_IN_RAD 6.2831853f // lazy 2pi estimation
 
 
-void voxelAnimationSingleLoop();
+uint32_t voxelAnimationSingleLoop();
 
 
 #endif /* VOXEL_CONFIGURATION_H_ */
