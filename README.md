@@ -1,6 +1,6 @@
 # Benchmarks
 
-- Better DMA and double buffering speed up by 0.8% (Debug 41447ms - 41524ms) (compared to first benchmark it's 5% increase)
+- Better DMA and double buffering speed up by 0.8% (Debug 41447ms - 41524ms 37fps, Release 12762ms - 12785ms 123fps).  Compared to first benchmark it's 5% increase on Debug.
 
 - Badly done DMA transfers speedup by 3.8% (Debug 41797ms - 41869ms, getting from average 36 FPS to 37)
 
