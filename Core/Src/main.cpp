@@ -64,6 +64,16 @@ static void MX_SPI3_Init(void);
 /* USER CODE BEGIN 0 */
 
 
+void displayPalette() {
+	for (uint32_t y=0; y<oled::Dimensions::height; y++) {
+		for (uint32_t x=0; x<oled::Dimensions::width; x++) {
+			uint8_t color = (x / 6) + ((y / 4) * oled::Dimensions::width);
+			oled::drawPixel(x, y, color);
+		}
+	}
+}
+
+
 /* USER CODE END 0 */
 
 /**
@@ -100,6 +110,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   oled::init();
+  displayPalette();
+  HAL_Delay(1000);
+
   oled::clearScreen();
   HAL_Delay(100);
 
