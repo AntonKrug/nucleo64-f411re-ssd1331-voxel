@@ -9,10 +9,9 @@
 #include "drivers/oled_for_c.h"
 
 
-uint8_t buffer[WIDTH * HEIGHT]  __attribute__ ((aligned));
-uint8_t bufferDisplay[WIDTH * HEIGHT]  __attribute__ ((aligned));
+uint8_t buffer[2][WIDTH * HEIGHT]  __attribute__ ((aligned));
 uint8_t zBuffer[WIDTH] __attribute__ ((aligned));
-
+uint32_t frame = 0;
 
 typedef struct {
 	uint32_t x;
@@ -29,9 +28,10 @@ typedef struct {
 void lineVertical(uint32_t x, int32_t yBegin, uint32_t yEnd, uint8_t color) {
 	if (yBegin < 0) yBegin = 0; // When start is outside the screen, limit it
 	uint32_t offset = yBegin |  ( x << HEIGHT_BITS);
+	uint8_t *bufferCur = &buffer[frame%2][offset];
 
-	for (uint32_t index = yBegin; index < yEnd; ++index, offset++) {
-		buffer[offset] = color;
+	for (uint32_t index = yBegin; index < yEnd; ++index, bufferCur++) {
+		*bufferCur = color;
 	}
 }
 
@@ -39,8 +39,11 @@ void lineVertical(uint32_t x, int32_t yBegin, uint32_t yEnd, uint8_t color) {
 void cleanBuffers() {
 	// Clean fraction of the screen:
 	// Top doesn't changes and bottom should be likely full landscape anyway
-	for (uint32_t index = 0; index < (WIDTH * HEIGHT ); ++index) {
-		buffer[index] = VOXEL_BACKGROUND_COLOR;
+
+	uint8_t *bufferCur = buffer[frame%2];
+
+	for (uint32_t index = 0; index < (WIDTH * HEIGHT ); ++index, bufferCur++) {
+		*bufferCur = VOXEL_BACKGROUND_COLOR;
 	}
 
 	// Clean z buffer fully
@@ -177,12 +180,7 @@ uint32_t voxelAnimationSingleLoop() {
 	float pointingToOld = 0.0f;
 	static uint32_t altitudeOld = 255;
 
-	// full buffer clean once whole loop
-	for (uint32_t index = 0; index < WIDTH * HEIGHT; ++index) {
-		buffer[index] = VOXEL_BACKGROUND_COLOR;
-	}
-
-	uint32_t frame = 0;
+	frame = 0;
 	for (float step = 0.0f; step < VOXEL_FULL_CIRCLE_IN_RAD; step += VOXEL_ANIMATION_STEP) {
 		cleanBuffers();
 		uint32_t altitude = calculateAltitude(step, altitudeOld);
@@ -200,8 +198,7 @@ uint32_t voxelAnimationSingleLoop() {
 				(HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR) + roll);
 
 		// Flush the calculated buffer into the screen
-		memcpy(bufferDisplay, buffer, WIDTH*HEIGHT);
-		oledUpdateScreenFromBuffer(bufferDisplay,  WIDTH*HEIGHT);
+		oledUpdateScreenFromBuffer(buffer[frame%2],  WIDTH * HEIGHT);
 
 		// Store the values for the next iteration
 		cameraNow     = cameraNext;
