@@ -18,16 +18,9 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "drivers/oled_for_c.h"
-#include "main.h"
-//#include "printf/printf.h"
 #include <stdio.h>
-
-//#define MAP_SIZE 256
-
-//#include "color.h"
-//#include "height.h"
-
+#include "drivers/oled.hpp"
+#include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -105,19 +98,13 @@ int main(void)
   MX_USART2_UART_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
-//  RetargetInit(&huart2);
 
-//  HAL_UART_Transmit(&huart2, (uint8_t *)"ahoj", 4, HAL_MAX_DELAY);
-  HAL_Delay(1000);
-  printf("Started\r\n");
+  oled::init();
+  oled::clearScreen();
+  HAL_Delay(100);
 
-  oledInit();
 
-  oledClearScreen();
-
-  for (volatile int x=0;x<64000;x++) {
-	  x+=1;
-  }
+  printf("Started a benchmark\r\n");
 
 
   /* USER CODE END 2 */
@@ -131,11 +118,7 @@ int main(void)
 	  uint32_t ticksEnd = HAL_GetTick();
 	  uint32_t tickDelta = ticksEnd - ticksStart;
 
-	  printf("Delta %lu\r\n", tickDelta);
-
-//	  HAL_UART_Transmit(&huart2, pData, Size, Timeout)
-
-
+	  printf("Delta time of the whole run %lu\r\n", tickDelta);
 
     /* USER CODE END WHILE */
 
@@ -318,23 +301,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-int __io_putchar(int ch)
-{
- uint8_t c[1];
- c[0] = ch & 0x00FF;
- HAL_UART_Transmit(&huart2, &*c, 1, 10);
- return ch;
-}
 
-int _write(int file,char *ptr, int len)
-{
- int DataIdx;
- for(DataIdx= 0; DataIdx< len; DataIdx++)
- {
- __io_putchar(*ptr++);
- }
-return len;
-}
 /* USER CODE END 4 */
 
 /**

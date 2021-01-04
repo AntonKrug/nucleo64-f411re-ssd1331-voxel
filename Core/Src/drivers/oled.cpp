@@ -40,16 +40,9 @@ void drawPixel(uint8_t x, uint8_t y, uint8_t color) {
 
 void init() {
 	HAL_GPIO_WritePin(SDD133_Reset_GPIO_Port, SDD133_Reset_Pin, GPIO_PIN_RESET);
-
-	for (volatile int x = 0; x < 64000; x++) {
-		x += 1;
-	}
-
+	HAL_Delay(100);
 	HAL_GPIO_WritePin(SDD133_Reset_GPIO_Port, SDD133_Reset_Pin, GPIO_PIN_SET);
-
-	for (volatile int x = 0; x < 64000; x++) {
-		x += 1;
-	}
+	HAL_Delay(250);
 
 	const auto remapSetting = Remap::incrementVertical| Remap::ramToPinInverted |
 			Remap::colorRGB | Remap::leftRightSwapOff | Remap::scanMaxTo0 |
