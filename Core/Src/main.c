@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  * <h2><center>&copy; Copyright (c) 2021 STMicroelectronics.
   * All rights reserved.</center></h2>
   *
   * This software component is licensed by ST under BSD 3-Clause license,
@@ -19,12 +19,11 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include <stdio.h>
-#include "drivers/oled.hpp"
+#include "drivers/oled_for_c.h"
 #include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-//#include "retarget/retarget.h"
 
 /* USER CODE END Includes */
 
@@ -44,6 +43,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi3;
+DMA_HandleTypeDef hdma_spi3_tx;
 
 UART_HandleTypeDef huart2;
 
@@ -54,6 +54,7 @@ UART_HandleTypeDef huart2;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI3_Init(void);
 /* USER CODE BEGIN PFP */
@@ -65,10 +66,10 @@ static void MX_SPI3_Init(void);
 
 
 void displayPalette() {
-	for (uint32_t y=0; y<oled::Dimensions::height; y++) {
-		for (uint32_t x=0; x<oled::Dimensions::width; x++) {
-			uint8_t color = (x / 6) + ((y / 4) * oled::Dimensions::width);
-			oled::drawPixel(x, y, color);
+	for (uint32_t y=0; y<96; y++) {
+		for (uint32_t x=0; x<128; x++) {
+			uint8_t color = (x / 6) + ((y / 4) * 128);
+			oledDrawPixel(x, y, color);
 		}
 	}
 }
@@ -90,7 +91,6 @@ int main(void)
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-//  HAL_
 
   /* USER CODE BEGIN Init */
 
@@ -105,20 +105,19 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_USART2_UART_Init();
   MX_SPI3_Init();
   /* USER CODE BEGIN 2 */
 
-  oled::init();
+  oledInit();
   displayPalette();
   HAL_Delay(1000);
 
-  oled::clearScreen();
+  oledClearScreen();
   HAL_Delay(100);
 
-
   printf("Started a benchmark\r\n");
-
 
   /* USER CODE END 2 */
 
@@ -126,20 +125,17 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  uint32_t ticksStart = HAL_GetTick();
-	  voxelAnimationSingleLoop();
-	  uint32_t ticksEnd = HAL_GetTick();
-	  uint32_t tickDelta = ticksEnd - ticksStart;
-
-	  printf("Delta time of the whole run %lu\r\n", tickDelta);
-
     /* USER CODE END WHILE */
+	uint32_t ticksStart = HAL_GetTick();
+	voxelAnimationSingleLoop();
+	uint32_t ticksEnd = HAL_GetTick();
+	uint32_t tickDelta = ticksEnd - ticksStart;
 
+	printf("Delta time of the whole run %lu\r\n", tickDelta);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
 }
-
 
 /**
   * @brief System Clock Configuration
@@ -253,6 +249,22 @@ static void MX_USART2_UART_Init(void)
   /* USER CODE BEGIN USART2_Init 2 */
 
   /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * Enable DMA controller clock
+  */
+static void MX_DMA_Init(void)
+{
+
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
+
+  /* DMA interrupt init */
+  /* DMA1_Stream5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
 
 }
 
