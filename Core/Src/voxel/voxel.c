@@ -50,7 +50,7 @@ void cleanBuffers() {
 
 uint32_t calculateMapOffset(uint32_t x, uint32_t y) {
 	// Calculate index depending on the current coordinates and resolution
-	return ((x+VOXEL_MAP_RESOLUTION)%VOXEL_MAP_RESOLUTION) + (((y+VOXEL_MAP_RESOLUTION)%VOXEL_MAP_RESOLUTION) << VOXEL_MAP_BITS);
+	return (x % VOXEL_MAP_RESOLUTION) | ((y % VOXEL_MAP_RESOLUTION) << VOXEL_MAP_BITS);
 }
 
 
@@ -58,8 +58,8 @@ PairFloat infiniteSymbolPath(float time) {
 	// Quick and dirty infinity symbol estimation
 	// https://gamedev.stackexchange.com/questions/43691
 	const PairFloat ret = {
-		110 + VOXEL_MAP_RESOLUTION + 147 * cosf(time),
-		70 + VOXEL_MAP_RESOLUTION + 115 * sinf(time*2.0f)
+		(110 + 2 * VOXEL_MAP_RESOLUTION) + 147 * cosf(time),
+		(70 + 2 * VOXEL_MAP_RESOLUTION) + 115 * sinf(time*2.0f)
 	};
 
 	return ret;

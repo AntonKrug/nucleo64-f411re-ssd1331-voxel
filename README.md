@@ -1,6 +1,11 @@
 # Benchmarks
 
+
+- Instead of adding whole MAP_SIZE on each calculation pre-hardcode it before so less additions will have to be made
+  - Slowed down by few ms again (Debug 43386 - 43457ms) 
+
 - Aligning buffer does slow down, even when it shouldn't by 0.018% (Debug 43384ms - 43456ms) 
+
 - Vertical increments does 0.3% improvement (Debug 43376ms - 43447ms)
   - It does align better to the render engine which often writes vertical lines
   - Instead of increment the WIDTH now it can increment just by +1
