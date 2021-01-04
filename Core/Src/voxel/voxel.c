@@ -2,6 +2,7 @@
 // This code is licensed under MIT license (see LICENSE.txt for details)
 
 #include <math.h>
+#include <string.h>
 
 #include "voxel/voxel.h" // The map settings need to match the included map
 
@@ -9,6 +10,7 @@
 
 
 uint8_t buffer[WIDTH * HEIGHT]  __attribute__ ((aligned));
+uint8_t bufferDisplay[WIDTH * HEIGHT]  __attribute__ ((aligned));
 uint8_t zBuffer[WIDTH] __attribute__ ((aligned));
 
 
@@ -198,7 +200,8 @@ uint32_t voxelAnimationSingleLoop() {
 				(HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR) + roll);
 
 		// Flush the calculated buffer into the screen
-		oledUpdateScreenFromBuffer(buffer,  WIDTH*HEIGHT);
+		memcpy(bufferDisplay, buffer, WIDTH*HEIGHT);
+		oledUpdateScreenFromBuffer(bufferDisplay,  WIDTH*HEIGHT);
 
 		// Store the values for the next iteration
 		cameraNow     = cameraNext;

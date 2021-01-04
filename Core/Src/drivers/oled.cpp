@@ -10,6 +10,7 @@ extern "C"
 
 using namespace oled;
 
+volatile bool oled_dma = false;
 
 void sendControlBuffer(uint8_t *buf, uint32_t size) {
 	HAL_GPIO_WritePin(SDD133_D_C_GPIO_Port,     SDD133_D_C_Pin,     GPIO_PIN_RESET);
@@ -89,20 +90,35 @@ void clearScreen() {
 }
 
 
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+	if (hspi->Instance == SPI3) {
+
+		HAL_GPIO_WritePin(SDD133_CS_PC10_GPIO_Port, SDD133_CS_PC10_Pin, GPIO_PIN_SET);
+		oled_dma = false;
+	}
+
+	//done
+}
+
 void updateScreenFromBuffer(uint8_t *buffer, uint32_t size) {
 	uint8_t setupBuf[] = {
 			Control::setColumn, 0, Dimensions::width  - 1,
 			Control::setRow,    0, Dimensions::height - 1
 	};
 
+	while (oled_dma);
+
 	sendControlBuffer(setupBuf, 6);
 
 	HAL_GPIO_WritePin(SDD133_D_C_GPIO_Port,     SDD133_D_C_Pin,     GPIO_PIN_SET);
 	HAL_GPIO_WritePin(SDD133_CS_PC10_GPIO_Port, SDD133_CS_PC10_Pin, GPIO_PIN_RESET);
 
-	HAL_SPI_Transmit(&hspi3, buffer, size, HAL_MAX_DELAY);
+	HAL_SPI_Transmit_DMA(&hspi3, buffer, size);
+	oled_dma = true;
 
-	HAL_GPIO_WritePin(SDD133_CS_PC10_GPIO_Port, SDD133_CS_PC10_Pin, GPIO_PIN_SET);
+//	HAL_SPI_Transmit(&hspi3, buffer, HAL_MAX_DELAY);
+
+//	HAL_GPIO_WritePin(SDD133_CS_PC10_GPIO_Port, SDD133_CS_PC10_Pin, GPIO_PIN_SET);
 }
 
 
