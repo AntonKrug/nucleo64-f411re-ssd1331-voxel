@@ -12,6 +12,8 @@ using namespace oled;
 
 volatile bool oled_dma = false;
 
+uint32_t bgColor = VOXEL_BACKGROUND_COLOR;
+
 void sendControlBuffer(uint8_t *buf, uint32_t size) {
 	HAL_GPIO_WritePin(SDD133_D_C_GPIO_Port,     SDD133_D_C_Pin,     GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(SDD133_CS_PC10_GPIO_Port, SDD133_CS_PC10_Pin, GPIO_PIN_RESET);
@@ -89,16 +91,19 @@ void clearScreen() {
 	sendControlBuffer(clearScreen, sizeof(clearScreen) / sizeof(clearScreen[0]));
 }
 
+uint8_t *currentBuffer;
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 	if (hspi->Instance == SPI3) {
 
 		HAL_GPIO_WritePin(SDD133_CS_PC10_GPIO_Port, SDD133_CS_PC10_Pin, GPIO_PIN_SET);
 		oled_dma = false;
+		HAL_DMA_Start_IT(&hdma_memtomem_dma2_stream0, (uint32_t)&bgColor, (uint32_t)currentBuffer, Dimensions::width * Dimensions::height);
 	}
 
 	//done
 }
+
 
 void updateScreenFromBuffer(uint8_t *buffer, uint32_t size) {
 	uint8_t setupBuf[] = {
@@ -106,6 +111,7 @@ void updateScreenFromBuffer(uint8_t *buffer, uint32_t size) {
 			Control::setRow,    0, Dimensions::height - 1
 	};
 
+	// Wait if the previous DMA didn't finished yet
 	while (oled_dma);
 
 	sendControlBuffer(setupBuf, 6);
@@ -113,6 +119,7 @@ void updateScreenFromBuffer(uint8_t *buffer, uint32_t size) {
 	HAL_GPIO_WritePin(SDD133_D_C_GPIO_Port,     SDD133_D_C_Pin,     GPIO_PIN_SET);
 	HAL_GPIO_WritePin(SDD133_CS_PC10_GPIO_Port, SDD133_CS_PC10_Pin, GPIO_PIN_RESET);
 
+	currentBuffer = buffer;
 	HAL_SPI_Transmit_DMA(&hspi3, buffer, size);
 	oled_dma = true;
 

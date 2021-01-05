@@ -9,6 +9,6 @@
 
 extern SPI_HandleTypeDef hspi3;
 extern UART_HandleTypeDef huart2;
-
+extern DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
 
 #endif /* INC_GLOBAL_H_ */

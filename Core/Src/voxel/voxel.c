@@ -36,19 +36,24 @@ void lineVertical(uint32_t x, int32_t yBegin, uint32_t yEnd, uint8_t color) {
 }
 
 
-void cleanBuffers() {
-	// Clean fraction of the screen:
-	// Top doesn't changes and bottom should be likely full landscape anyway
-
-	uint8_t *bufferCur = buffer[frame%2];
-
-	for (uint32_t index = 0; index < (WIDTH * HEIGHT ); ++index, bufferCur++) {
-		*bufferCur = VOXEL_BACKGROUND_COLOR;
-	}
-
+void cleanZbuffer() {
 	// Clean z buffer fully
 	for (uint32_t index = 0; index < WIDTH; ++index) {
 		zBuffer[index] = HEIGHT;
+	}
+}
+
+
+void cleanTheSkybox() {
+	// Wipe only section which need to be (as little as you get away with)
+	uint8_t *bufferCurLine = buffer[frame%2];
+
+	for (uint32_t ix = 0; ix < WIDTH; ++ix) {
+		uint8_t *bufferCur = bufferCurLine;
+		for (uint32_t iy = 0; iy < zBuffer[ix]; ++iy, bufferCur++) {
+			*bufferCur = VOXEL_BACKGROUND_COLOR;
+		}
+		bufferCurLine += HEIGHT;
 	}
 }
 
@@ -182,7 +187,7 @@ uint32_t voxelAnimationSingleLoop() {
 
 	frame = 0;
 	for (float step = 0.0f; step < VOXEL_FULL_CIRCLE_IN_RAD; step += VOXEL_ANIMATION_STEP) {
-		cleanBuffers();
+		cleanZbuffer();
 		uint32_t altitude = calculateAltitude(step, altitudeOld);
 		cameraNext = infiniteSymbolPath(step + VOXEL_ANIMATION_STEP);
 
@@ -196,6 +201,9 @@ uint32_t voxelAnimationSingleLoop() {
 		renderScreen(screenResolution, cameraNow, pointingTo, altitude,
 				(HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR) - roll,
 				(HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR) + roll);
+
+		// Only fill leftover vertical lines with the skybox
+//		cleanTheSkybox();
 
 		// Flush the calculated buffer into the screen
 		oledUpdateScreenFromBuffer(buffer[frame%2],  WIDTH * HEIGHT);
