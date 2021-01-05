@@ -58,7 +58,7 @@ void cleanTheSkybox() {
 }
 
 
-uint32_t calculateMapOffset(uint32_t x, uint32_t y) {
+uint32_t calculateMapOffset(uint32_t x, uint32_t y)  {
 	// Calculate index depending on the current coordinates and resolution
 	return (x % VOXEL_MAP_RESOLUTION) | ((y % VOXEL_MAP_RESOLUTION) << VOXEL_MAP_BITS);
 }
@@ -152,7 +152,7 @@ void renderScreen(Pair32 screen, PairFloat origin, float angle, int32_t altitude
 			if (heightOnScreen < zBuffer[x]) {
 				// Render the location when it's not obscured by previous voxel
 				uint8_t color = VOXEL_MAP_COLOR[mapOffset];
-				if ( z > 150 ) {
+				if ( z > VOXEL_FOG_START ) {
 					// When we are far away apply fast low-quality fading effect
 					color = ((color & 0xDA) >> 1 ) | 0x92;
 				}

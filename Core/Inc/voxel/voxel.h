@@ -23,6 +23,7 @@
 
 // Camera / View / Vehicle settings
 #define VOXEL_BACKGROUND_COLOR 159         // Background sky color
+#define VOXEL_FOG_START 150                // Distance at where it will start fading
 #define VOXEL_ANIMATION_STEP 0.004f        // The smaller number the smoother the animation is
 #define VOXEL_VEHICLE_TILT_FACTOR   250.0f // The bigger number the more tilting is applied
 #define VOXEL_VEHICLE_HEIGHT_FACTOR 2.15f  // The higher number the lower the aircraft
