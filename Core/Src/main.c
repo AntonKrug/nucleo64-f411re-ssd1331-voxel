@@ -135,7 +135,7 @@ int main(void)
 	uint32_t ticksEnd = HAL_GetTick();
 	uint32_t tickDelta = ticksEnd - ticksStart;
 
-	printf("Delta time of the whole run %lu in %lu frames, FPS=%lu\r\n", tickDelta, frames, (frames*1000) / tickDelta);
+	printf("Delta time of the whole run %lu ms in %lu frames, FPS=%lu\r\n", tickDelta, frames, (frames*1000) / tickDelta);
   }
   /* USER CODE END 3 */
 }
