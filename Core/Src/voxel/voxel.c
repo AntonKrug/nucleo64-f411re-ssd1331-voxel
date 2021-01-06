@@ -44,6 +44,14 @@ void cleanZbuffer() {
 }
 
 
+
+void cleanBuffer(uint8_t* buffer) {
+	for (uint32_t ix = 0; ix < WIDTH * HEIGHT; ++ix, buffer++) {
+		*buffer = VOXEL_BACKGROUND_COLOR;
+	}
+}
+
+
 void cleanTheSkybox() {
 	// Wipe only section which need to be (as little as you get away with)
 	uint8_t *bufferCurLine = buffer[frame%2];
@@ -184,6 +192,10 @@ uint32_t voxelAnimationSingleLoop() {
 	PairFloat cameraNext;
 	float pointingToOld = 0.0f;
 	static uint32_t altitudeOld = 255;
+
+	// Clean the buffers for the very first updates
+	cleanBuffer(buffer[0]);
+	cleanBuffer(buffer[1]);
 
 	frame = 0;
 	for (float step = 0.0f; step < VOXEL_FULL_CIRCLE_IN_RAD; step += VOXEL_ANIMATION_STEP) {
