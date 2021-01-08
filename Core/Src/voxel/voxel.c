@@ -8,15 +8,24 @@
 
 #include "drivers/oled_for_c.h"
 
+#define FIXED_POINT_BITS 16
+
 
 uint8_t buffer[2][WIDTH * HEIGHT]  __attribute__ ((aligned));
 uint8_t zBuffer[WIDTH] __attribute__ ((aligned));
 uint32_t frame = 0;
 
+
 typedef struct {
-	uint32_t x;
-	uint32_t y;
+	int32_t x;
+	int32_t y;
 } Pair32;
+
+
+typedef struct {
+	int32_t x;
+	int32_t y;
+} PairFixedPoint;
 
 
 typedef struct {
@@ -131,30 +140,30 @@ void renderScreen(Pair32 screen, PairFloat origin, float angle, int32_t altitude
 		// Start from close by to far, but first few steps as they not visible
 		const float inverseZ  = 1.0f / (float)(z) * VOXEL_MAP_HEIGHT_TALL;
 
-		PairFloat begin = {
-				-angleCos * z - angleSin * z + origin.x,
-				 angleSin * z - angleCos * z + origin.y
+		PairFixedPoint begin = {
+				(-angleCos * z - angleSin * z + origin.x) * (1 << FIXED_POINT_BITS),
+				(angleSin * z - angleCos * z + origin.y)  * (1 << FIXED_POINT_BITS)
 		};
 
-		PairFloat end = {
-				 angleCos * z - angleSin * z + origin.x,
-				-angleSin * z - angleCos * z + origin.y
+		PairFixedPoint end = {
+				(angleCos * z - angleSin * z + origin.x) * (1 << FIXED_POINT_BITS),
+				(-angleSin * z - angleCos * z + origin.y) * (1 << FIXED_POINT_BITS)
 		};
 
 		// When begin and end locations on the map are calculated, calculate
 		// how big the steps needs to be made to get from begin to end when
 		// going through the screen horizontally
-		PairFloat step = {
-				(end.x - begin.x) / (float)screen.x,
-				(end.y - begin.y) / (float)screen.x
+		PairFixedPoint step = {
+				(end.x - begin.x) / screen.x,
+				(end.y - begin.y) / screen.x
 		};
 
-		PairFloat current = {begin.x, begin.y};
+		PairFixedPoint current = {begin.x, begin.y};
 
 		float pitch = pitchBegin;
 		for (uint32_t x = 0; x < screen.x; ++x, pitch += pitchStep) {
 			// For each horizontal point on the screen calculate the corresponding voxel
-			uint32_t mapOffset      = calculateMapOffset(current.x, current.y);
+			uint32_t mapOffset      = calculateMapOffset(current.x >> FIXED_POINT_BITS, current.y >> FIXED_POINT_BITS);
 			int32_t  heightOnScreen = fmaxf(0.0f, (altitude - VOXEL_MAP_HEIGHT[mapOffset]) * inverseZ + pitch);
 
 			if (heightOnScreen < zBuffer[x]) {

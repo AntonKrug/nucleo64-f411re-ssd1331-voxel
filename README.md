@@ -3,6 +3,8 @@
 Doing whole run on the voxel map (1571 frames) each time and measuring how many miliseconds it took (and calculating the average FPS), Debug configurations are slower but allow better debuging while Release configuration is using -Ofast and is significantly faster.
 What is bizzare that some improvements made it slower, yet when testing the most upto date Release candidate and undoing these improvements caused slow down by 7fps. So that looks like even when at that moment that change was not showing significant result when they combined together they were making measurable impact 
 
+- Fixed-point calculations (Debug 0.3% faster 39248ms 40fps, Release 6% faster 11186ms 140fps)  
+
 - DMA skybox clean up (Debug 2.7% faster 39371ms 39fps, Release 11902ms 131fps)
 
 - Particial skybox cleanup (Debug 2.4% faster 40471ms 38fps, Release 12230ms 128fps). Compared to the 1st benchmark it's 7.5% 
