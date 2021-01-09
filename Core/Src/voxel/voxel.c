@@ -72,9 +72,12 @@ void cleanTheSkybox() {
 }
 
 
-uint32_t calculateMapOffset(uint32_t x, uint32_t y)  {
+uint32_t calculateMapOffset(PairFixedPoint point)  {
 	// Calculate index depending on the current coordinates and resolution
-	return (x % VOXEL_MAP_RESOLUTION) | ((y % VOXEL_MAP_RESOLUTION) << VOXEL_MAP_BITS);
+	int32_t x = point.x % (VOXEL_MAP_RESOLUTION << FIXED_POINT_BITS);
+	int32_t y = point.y % (VOXEL_MAP_RESOLUTION << FIXED_POINT_BITS);
+
+	return ( (x >> FIXED_POINT_BITS) | ( (y & FIXED_POINT_MAJOR_MASK) >> (FIXED_POINT_BITS - VOXEL_MAP_BITS)) );
 }
 
 
@@ -105,8 +108,9 @@ uint32_t calculateAltitude(float time, uint32_t previousAltitude) {
 	// Detect the highest point closely ahead of the path
 	for (uint32_t index = 0; index < 5; ++index) {
 		// Look up only few steps ahead
-		PairFloat camera          = infiniteSymbolPath(time);
-		uint32_t  probingAltitude = altitudeOffset + VOXEL_MAP_HEIGHT[calculateMapOffset(camera.x, camera.y)];
+		PairFloat      camera      = infiniteSymbolPath(time);
+		PairFixedPoint cameraFixed = {FLOAT_TO_FIXED_POINT(camera.x), FLOAT_TO_FIXED_POINT(camera.y)};
+		uint32_t  probingAltitude  = altitudeOffset + VOXEL_MAP_HEIGHT[calculateMapOffset(cameraFixed)];
 		if (maxAltitude < probingAltitude) {
 			maxAltitude = probingAltitude;
 		}
@@ -162,8 +166,8 @@ void renderScreen(PairFloat origin, float angle, int32_t altitude, int32_t pitch
 		int32_t pitch = pitchBegin;
 		for (uint32_t x = 0; x < WIDTH; ++x, pitch += pitchStep) {
 			// For each horizontal point on the screen calculate the corresponding voxel
-			uint32_t mapOffset      = calculateMapOffset(current.x >> FIXED_POINT_BITS, current.y >> FIXED_POINT_BITS);
-			int32_t  heightOnScreen = FIXED_POINT_TO_INT((altitude - VOXEL_MAP_HEIGHT[mapOffset]) * inverseZ + pitch);
+			const uint32_t mapOffset      = calculateMapOffset(current);
+			int32_t        heightOnScreen = FIXED_POINT_TO_INT((altitude - VOXEL_MAP_HEIGHT[mapOffset]) * inverseZ + pitch);
 
 			// Cap it to the top of the screen when it's going above it
 			if (heightOnScreen<0) heightOnScreen = 0;
