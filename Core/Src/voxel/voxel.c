@@ -8,9 +8,6 @@
 
 #include "drivers/oled_for_c.h"
 
-#define FIXED_POINT_BITS 16
-
-
 uint8_t buffer[2][WIDTH * HEIGHT]  __attribute__ ((aligned));
 uint8_t zBuffer[WIDTH] __attribute__ ((aligned));
 uint32_t frame = 0;
@@ -129,25 +126,29 @@ uint32_t calculateAltitude(float time, uint32_t previousAltitude) {
 }
 
 
-void renderScreen(Pair32 screen, PairFloat origin, float angle, int32_t altitude, uint32_t pitchBegin, uint32_t pitchEnd) {
+void renderScreen(Pair32 screen, PairFloat origin, float angle, int32_t altitude, int32_t pitchBegin, int32_t pitchEnd) {
     const float   angleSin   = sinf(angle);
     const float   angleCos   = cosf(angle);
-    const float   pitchStep  = ((float)pitchEnd - (float)pitchBegin) / (float)screen.x;
-          float   zIncrement = 1.0f; // starting z increment value
 
+    int32_t pitchStep  = (pitchEnd - pitchBegin) / screen.x;
 
-	for (float z = VOXEL_CAMERA_START_Z; z < VOXEL_MAX_DRAW_DISTANCE; z = z + zIncrement) {
+    int32_t zIncrement = FLOAT_TO_FIXED_POINT(1.0f); // starting z increment value
+
+	const PairFixedPoint originFixed = {FLOAT_TO_FIXED_POINT(origin.x), FLOAT_TO_FIXED_POINT(origin.y)};
+
+	for (int32_t z = VOXEL_CAMERA_START_Z; z < VOXEL_MAX_DRAW_DISTANCE; z = z + zIncrement) {
 		// Start from close by to far, but first few steps as they not visible
-		const float inverseZ  = 1.0f / (float)(z) * VOXEL_MAP_HEIGHT_TALL;
+
+		const int32_t inverseZ  = (FIXED_POINT_ONE_FOR_DIVISION / z) * VOXEL_MAP_HEIGHT_TALL;
 
 		PairFixedPoint begin = {
-				((-angleCos - angleSin) * z + origin.x) * (1 << FIXED_POINT_BITS),
-				((angleSin - angleCos) * z + origin.y)  * (1 << FIXED_POINT_BITS)
+				((-angleCos - angleSin) * z + originFixed.x),
+				(( angleSin - angleCos) * z + originFixed.y)
 		};
 
 		PairFixedPoint end = {
-				((angleCos - angleSin) * z + origin.x) * (1 << FIXED_POINT_BITS),
-				((-angleSin - angleCos) * z + origin.y) * (1 << FIXED_POINT_BITS)
+				(( angleCos - angleSin) * z + originFixed.x),
+				((-angleSin - angleCos) * z + originFixed.y)
 		};
 
 		// When begin and end locations on the map are calculated, calculate
@@ -160,11 +161,12 @@ void renderScreen(Pair32 screen, PairFloat origin, float angle, int32_t altitude
 
 		PairFixedPoint current = {begin.x, begin.y};
 
-		float pitch = pitchBegin;
+		int32_t pitch = pitchBegin;
 		for (uint32_t x = 0; x < screen.x; ++x, pitch += pitchStep) {
 			// For each horizontal point on the screen calculate the corresponding voxel
 			uint32_t mapOffset      = calculateMapOffset(current.x >> FIXED_POINT_BITS, current.y >> FIXED_POINT_BITS);
-			int32_t  heightOnScreen = fmaxf(0.0f, (altitude - VOXEL_MAP_HEIGHT[mapOffset]) * inverseZ + pitch);
+			int32_t  heightOnScreen = FIXED_POINT_TO_INT((altitude - VOXEL_MAP_HEIGHT[mapOffset]) * inverseZ + pitch);
+			if (heightOnScreen<0) heightOnScreen = 0;
 
 			if (heightOnScreen < zBuffer[x]) {
 				// Render the location when it's not obscured by previous voxel
@@ -218,13 +220,12 @@ uint32_t voxelAnimationSingleLoop() {
 		// Depending on old and current camera angle, estimated the roll
 		float roll = (pointingTo - pointingToOld) * VOXEL_VEHICLE_TILT_FACTOR;
 
-		// Significantly amplify the estimated roll
+		// Significantly amplify the estimated roll, convert it into fixed point in 2 steps
+		// because the first step can be compile time optimized and then the second one
+		// needs to be converted only once
 		renderScreen(screenResolution, cameraNow, pointingTo, altitude,
-				(HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR) - roll,
-				(HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR) + roll);
-
-		// Only fill leftover vertical lines with the skybox
-//		cleanTheSkybox();
+				FLOAT_TO_FIXED_POINT((HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR)) - FLOAT_TO_FIXED_POINT(roll),
+				FLOAT_TO_FIXED_POINT((HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR)) + FLOAT_TO_FIXED_POINT(roll));
 
 		// Flush the calculated buffer into the screen
 		oledUpdateScreenFromBuffer(buffer[frame%2],  WIDTH * HEIGHT);

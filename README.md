@@ -3,7 +3,9 @@
 Doing whole run on the voxel map (1571 frames) each time and measuring how many miliseconds it took (and calculating the average FPS), Debug configurations are slower but allow better debuging while Release configuration is using -Ofast and is significantly faster.
 What is bizzare that some improvements made it slower, yet when testing the most upto date Release candidate and undoing these improvements caused slow down by 7fps. So that looks like even when at that moment that change was not showing significant result when they combined together they were making measurable impact 
 
-- Removing redudant multiplication (Debug %0.07 faster 39222ms 40fps,  Release 0% faster 11186ms 140fps), release version already did that optimalisation in the toolchain
+- Using more fixed-point calculations (Debug 37% faster 28660ms 54fps, Release 7.7% faster 10383ms 151fps)
+
+- Removing redudant multiplication (Debug 0.07% faster 39222ms 40fps,  Release 0% faster 11186ms 140fps), release version already did that optimalisation in the toolchain
 
 - Fixed-point calculations (Debug 0.3% faster 39248ms 40fps, Release 6% faster 11186ms 140fps)  
 
