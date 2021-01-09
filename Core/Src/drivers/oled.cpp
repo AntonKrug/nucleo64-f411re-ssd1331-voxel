@@ -10,17 +10,20 @@ extern "C"
 
 using namespace oled;
 
-volatile bool oled_dma = false;
 
 uint8_t *currentBuffer;
 
 uint32_t bgColor = VOXEL_BACKGROUND_COLOR;
 
 
+#ifdef OLED_SYNC
+volatile bool oled_dma = false;
+
 void cleanBufferComplete(DMA_HandleTypeDef *memToMem) {
 	// Done wiping the buffer, this buffer will be ready to use by the next frame
 	oled_dma = false;
 }
+#endif
 
 
 void sendControlBuffer(uint8_t *buf, uint32_t size) {
@@ -86,8 +89,10 @@ void init() {
 
 	sendControlBuffer(initBuf, sizeof(initBuf) / sizeof(initBuf[0]));
 
-	// Setup the DMA callaback
+#ifdef OLED_SYNC
+	// Setup the DMA callback, to sync the display update
 	HAL_DMA_RegisterCallback(&hdma_memtomem_dma2_stream0,HAL_DMA_XFER_CPLT_CB_ID, cleanBufferComplete);
+#endif
 }
 
 
@@ -122,9 +127,11 @@ void updateScreenFromBuffer(uint8_t *buffer, uint32_t size) {
 			Control::setRow,    0, Dimensions::height - 1
 	};
 
+#ifdef OLED_SYNC
 	// Wait if the previous DMA didn't finished yet
 	while (oled_dma);
-
+	oled_dma = true;
+#endif
 	sendControlBuffer(setupBuf, 6);
 
 	HAL_GPIO_WritePin(SDD133_D_C_GPIO_Port,     SDD133_D_C_Pin,     GPIO_PIN_SET);
@@ -132,7 +139,6 @@ void updateScreenFromBuffer(uint8_t *buffer, uint32_t size) {
 
 	currentBuffer = buffer;
 	HAL_SPI_Transmit_DMA(&hspi3, buffer, size);
-	oled_dma = true;
 }
 
 

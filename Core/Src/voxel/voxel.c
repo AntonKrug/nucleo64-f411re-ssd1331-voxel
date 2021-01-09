@@ -126,11 +126,11 @@ uint32_t calculateAltitude(float time, uint32_t previousAltitude) {
 }
 
 
-void renderScreen(Pair32 screen, PairFloat origin, float angle, int32_t altitude, int32_t pitchBegin, int32_t pitchEnd) {
+void renderScreen(PairFloat origin, float angle, int32_t altitude, int32_t pitchBegin, int32_t pitchEnd) {
     const float   angleSin   = sinf(angle);
     const float   angleCos   = cosf(angle);
 
-    int32_t pitchStep  = (pitchEnd - pitchBegin) / screen.x;
+    int32_t pitchStep  = (pitchEnd - pitchBegin) / WIDTH;
 
     int32_t zIncrement = FLOAT_TO_FIXED_POINT(1.0f); // starting z increment value
 
@@ -155,14 +155,14 @@ void renderScreen(Pair32 screen, PairFloat origin, float angle, int32_t altitude
 		// how big the steps needs to be made to get from begin to end when
 		// going through the screen horizontally
 		PairFixedPoint step = {
-				(end.x - begin.x) / screen.x,
-				(end.y - begin.y) / screen.x
+				(end.x - begin.x) / WIDTH,
+				(end.y - begin.y) / WIDTH
 		};
 
 		PairFixedPoint current = {begin.x, begin.y};
 
 		int32_t pitch = pitchBegin;
-		for (uint32_t x = 0; x < screen.x; ++x, pitch += pitchStep) {
+		for (uint32_t x = 0; x < WIDTH; ++x, pitch += pitchStep) {
 			// For each horizontal point on the screen calculate the corresponding voxel
 			uint32_t mapOffset      = calculateMapOffset(current.x >> FIXED_POINT_BITS, current.y >> FIXED_POINT_BITS);
 			int32_t  heightOnScreen = FIXED_POINT_TO_INT((altitude - VOXEL_MAP_HEIGHT[mapOffset]) * inverseZ + pitch);
@@ -198,7 +198,6 @@ void renderScreen(Pair32 screen, PairFloat origin, float angle, int32_t altitude
 
 
 uint32_t voxelAnimationSingleLoop() {
-	const Pair32 screenResolution = { WIDTH, HEIGHT };
 	PairFloat cameraNow = infiniteSymbolPath(0.0f);
 	PairFloat cameraNext;
 	float pointingToOld = 0.0f;
@@ -223,7 +222,7 @@ uint32_t voxelAnimationSingleLoop() {
 		// Significantly amplify the estimated roll, convert it into fixed point in 2 steps
 		// because the first step can be compile time optimized and then the second one
 		// needs to be converted only once
-		renderScreen(screenResolution, cameraNow, pointingTo, altitude,
+		renderScreen(cameraNow, pointingTo, altitude,
 				FLOAT_TO_FIXED_POINT((HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR)) - FLOAT_TO_FIXED_POINT(roll),
 				FLOAT_TO_FIXED_POINT((HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR)) + FLOAT_TO_FIXED_POINT(roll));
 

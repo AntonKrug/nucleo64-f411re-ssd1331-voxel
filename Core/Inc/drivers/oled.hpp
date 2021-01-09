@@ -6,6 +6,8 @@
 
 #include <stdio.h>
 
+//#define OLED_SYNC
+
 extern "C" {
 namespace oled {
 
