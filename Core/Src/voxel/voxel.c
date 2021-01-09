@@ -141,13 +141,13 @@ void renderScreen(Pair32 screen, PairFloat origin, float angle, int32_t altitude
 		const float inverseZ  = 1.0f / (float)(z) * VOXEL_MAP_HEIGHT_TALL;
 
 		PairFixedPoint begin = {
-				(-angleCos * z - angleSin * z + origin.x) * (1 << FIXED_POINT_BITS),
-				(angleSin * z - angleCos * z + origin.y)  * (1 << FIXED_POINT_BITS)
+				((-angleCos - angleSin) * z + origin.x) * (1 << FIXED_POINT_BITS),
+				((angleSin - angleCos) * z + origin.y)  * (1 << FIXED_POINT_BITS)
 		};
 
 		PairFixedPoint end = {
-				(angleCos * z - angleSin * z + origin.x) * (1 << FIXED_POINT_BITS),
-				(-angleSin * z - angleCos * z + origin.y) * (1 << FIXED_POINT_BITS)
+				((angleCos - angleSin) * z + origin.x) * (1 << FIXED_POINT_BITS),
+				((-angleSin - angleCos) * z + origin.y) * (1 << FIXED_POINT_BITS)
 		};
 
 		// When begin and end locations on the map are calculated, calculate
