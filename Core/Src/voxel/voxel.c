@@ -74,10 +74,10 @@ void cleanTheSkybox() {
 
 uint32_t calculateMapOffset(PairFixedPoint point)  {
 	// Calculate index depending on the current coordinates and resolution
-	int32_t x = point.x % (VOXEL_MAP_RESOLUTION << FIXED_POINT_BITS);
-	int32_t y = point.y % (VOXEL_MAP_RESOLUTION << FIXED_POINT_BITS);
+	int32_t x = (point.x >> FIXED_POINT_BITS) % VOXEL_MAP_RESOLUTION;
+	int32_t y = (point.y >> FIXED_POINT_BITS) % VOXEL_MAP_RESOLUTION;
 
-	return ( (x >> FIXED_POINT_BITS) | ( (y & FIXED_POINT_MAJOR_MASK) >> (FIXED_POINT_BITS - VOXEL_MAP_BITS)) );
+	return ( x | (y << VOXEL_MAP_BITS) );
 }
 
 
