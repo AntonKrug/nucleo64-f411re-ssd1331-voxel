@@ -21,6 +21,7 @@
 
 #define FIXED_POINT_BITS             15                                     // it's 15 as it will be shifted twice and still has to fit into 32-bit (signed int has 1bit for sign, so we have to fit into 31-bit)
 #define FIXED_POINT_ONE_FOR_DIVISION (1<<(2*FIXED_POINT_BITS))              // 1 shifted twice by FIXED_POINT_BITS to prepare it for a division
+#define FIXED_POINT_INVERSE(X)       (FIXED_POINT_ONE_FOR_DIVISION/(X))
 #define FLOAT_TO_FIXED_POINT(X)      ((int32_t)((X)*(1<<FIXED_POINT_BITS)))
 #define INT_TO_FIXED_POINT(X)        ((int32_t)((X)<<FIXED_POINT_BITS))
 #define FIXED_POINT_TO_INT(X)        ((X)>>FIXED_POINT_BITS)

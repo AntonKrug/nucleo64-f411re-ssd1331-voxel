@@ -127,19 +127,17 @@ uint32_t calculateAltitude(float time, uint32_t previousAltitude) {
 
 
 void renderScreen(PairFloat origin, float angle, int32_t altitude, int32_t pitchBegin, int32_t pitchEnd) {
-    const float   angleSin   = sinf(angle);
-    const float   angleCos   = cosf(angle);
-
-    int32_t pitchStep  = (pitchEnd - pitchBegin) / WIDTH;
-
-    int32_t zIncrement = FLOAT_TO_FIXED_POINT(1.0f); // starting z increment value
-
 	const PairFixedPoint originFixed = {FLOAT_TO_FIXED_POINT(origin.x), FLOAT_TO_FIXED_POINT(origin.y)};
+    const float          angleSin    = sinf(angle);
+    const float          angleCos    = cosf(angle);
+    const int32_t        pitchStep   = (pitchEnd - pitchBegin) / WIDTH;
+
+    int32_t zIncrement = FLOAT_TO_FIXED_POINT(1.0f); // The starting Z increment value
 
 	for (int32_t z = VOXEL_CAMERA_START_Z; z < VOXEL_MAX_DRAW_DISTANCE; z = z + zIncrement) {
 		// Start from close by to far, but first few steps as they not visible
 
-		const int32_t inverseZ  = (FIXED_POINT_ONE_FOR_DIVISION / z) * VOXEL_MAP_HEIGHT_TALL;
+		const int32_t inverseZ  = FIXED_POINT_INVERSE(z) * VOXEL_MAP_HEIGHT_TALL;
 
 		PairFixedPoint begin = {
 				((-angleCos - angleSin) * z + originFixed.x),
@@ -166,13 +164,29 @@ void renderScreen(PairFloat origin, float angle, int32_t altitude, int32_t pitch
 			// For each horizontal point on the screen calculate the corresponding voxel
 			uint32_t mapOffset      = calculateMapOffset(current.x >> FIXED_POINT_BITS, current.y >> FIXED_POINT_BITS);
 			int32_t  heightOnScreen = FIXED_POINT_TO_INT((altitude - VOXEL_MAP_HEIGHT[mapOffset]) * inverseZ + pitch);
+
+			// Cap it to the top of the screen when it's going above it
 			if (heightOnScreen<0) heightOnScreen = 0;
 
 			if (heightOnScreen < zBuffer[x]) {
-				// Render the location when it's not obscured by previous voxel
+				// Render the line cluster if it's not obscured by previous voxel
 				uint8_t color = VOXEL_MAP_COLOR[mapOffset];
 				if ( z > VOXEL_FOG_START ) {
 					// When we are far away apply fast low-quality fading effect
+					//
+					// 3R3G2B color format:
+					//
+					// 1 - for each color mask away the LSB
+					//     (so they will not go into the MSL of other color channels while doing right shift)
+					//
+					// 2 - shift to right to divide the current color by half
+					//     (all 3 channels at the same time, thanks to step 1 it will not take bits from other channels)
+					//
+					// 3 - override the most significant bits of each channel into 1
+					//     (in essence mixing the weaker original color with a gray color)
+					//
+					// This results of a less saturated, faded out (to light gray) color, like behind fog, which
+					// fits well with light blue background color. Making the end or rendering space less sudden
 					color = ((color & 0xDA) >> 1 ) | 0x92;
 				}
 
