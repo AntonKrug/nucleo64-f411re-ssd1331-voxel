@@ -72,12 +72,12 @@ void cleanTheSkybox() {
 }
 
 
-uint32_t calculateMapOffset(PairFixedPoint point)  {
+uint32_t calculateMapOffset(int32_t pointX, int32_t pointY)  {
 	// Calculate index depending on the current coordinates and resolution
-	int32_t x = (point.x >> FIXED_POINT_BITS) % VOXEL_MAP_RESOLUTION;
-	int32_t y = (point.y >> FIXED_POINT_BITS) % VOXEL_MAP_RESOLUTION;
+	pointX = (pointX >> FIXED_POINT_BITS) % VOXEL_MAP_RESOLUTION;
+	pointY = (pointY >> FIXED_POINT_BITS) % VOXEL_MAP_RESOLUTION;
 
-	return ( x | (y << VOXEL_MAP_BITS) );
+	return ( pointX | (pointY << VOXEL_MAP_BITS) );
 }
 
 
@@ -109,8 +109,7 @@ uint32_t calculateAltitude(float time, uint32_t previousAltitude) {
 	for (uint32_t index = 0; index < 5; ++index) {
 		// Look up only few steps ahead
 		PairFloat      camera      = infiniteSymbolPath(time);
-		PairFixedPoint cameraFixed = {FLOAT_TO_FIXED_POINT(camera.x), FLOAT_TO_FIXED_POINT(camera.y)};
-		uint32_t  probingAltitude  = altitudeOffset + VOXEL_MAP_HEIGHT[calculateMapOffset(cameraFixed)];
+		uint32_t  probingAltitude  = altitudeOffset + VOXEL_MAP_HEIGHT[calculateMapOffset(FLOAT_TO_FIXED_POINT(camera.x), FLOAT_TO_FIXED_POINT(camera.y))];
 		if (maxAltitude < probingAltitude) {
 			maxAltitude = probingAltitude;
 		}
@@ -166,7 +165,7 @@ void renderScreen(PairFloat origin, float angle, int32_t altitude, int32_t pitch
 		int32_t pitch = pitchBegin;
 		for (uint32_t x = 0; x < WIDTH; ++x, pitch += pitchStep) {
 			// For each horizontal point on the screen calculate the corresponding voxel
-			const uint32_t mapOffset      = calculateMapOffset(current);
+			const uint32_t mapOffset      = calculateMapOffset(current.x, current.y);
 			int32_t        heightOnScreen = FIXED_POINT_TO_INT((altitude - VOXEL_MAP_HEIGHT[mapOffset]) * inverseZ + pitch);
 
 			// Cap it to the top of the screen when it's going above it
