@@ -34,4 +34,12 @@ What is bizzare that some improvements made it slower, yet when testing the most
     - and because the x << HEIGHT_BITS is power of 2 then instead of addition just binary OR can be used (depending on the arch this might have the same performance)
     
 - Horizontal increment screen (Debug 43507ms 36fps)
+
+
+# Possible improvements
+
+ - Do fixed point aproximation for sin/cos
+ 	- http://www.coranac.com/2009/07/sines/
+ 	- https://www.nullhardware.com/blog/fixed-point-sine-and-cosine-for-embedded-systems/
+
  
