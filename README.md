@@ -39,6 +39,7 @@ What is bizzare that some improvements made it slower, yet when testing the most
 # Possible improvements
 
  - Do fixed point aproximation for sin/cos
+    - https://en.wikipedia.org/wiki/CORDIC
  	- http://www.coranac.com/2009/07/sines/
  	- https://www.nullhardware.com/blog/fixed-point-sine-and-cosine-for-embedded-systems/
 
