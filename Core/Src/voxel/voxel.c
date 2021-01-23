@@ -12,24 +12,7 @@ uint8_t buffer[2][WIDTH * HEIGHT]  __attribute__ ((aligned));
 uint8_t zBuffer[WIDTH] __attribute__ ((aligned));
 uint32_t frame = 0;
 
-
-typedef struct {
-	int32_t x;
-	int32_t y;
-} Pair32;
-
-
-typedef struct {
-	int32_t x;
-	int32_t y;
-} PairFixedPoint;
-
-
-typedef struct {
-	float x;
-	float y;
-} PairFloat;
-
+PairFloat cameraLoop[VOXEL_FULL_CIRCLE_STEPS];
 
 void lineVertical(uint32_t x, int32_t yBegin, uint32_t yEnd, uint8_t color) {
 	if (yBegin < 0) yBegin = 0; // When start is outside the screen, limit it
@@ -92,11 +75,12 @@ PairFloat infiniteSymbolPath(float time) {
 
 float angleOfTwoPoints(PairFloat a, PairFloat b) {
 	// Calculating angle and offset it to make it work in our reference
-	return (VOXEL_FULL_CIRCLE_IN_RAD / 4) - atan2f(a.y - b.y, a.x - b.x);
+	return ((5 * VOXEL_FULL_CIRCLE_IN_RAD) / 4) - atan2f(a.y - b.y, a.x - b.x);
+//	return atan2f(a.y - b.y, a.x - b.x);
 }
 
 
-uint32_t calculateAltitude(float time, uint32_t previousAltitude) {
+uint32_t calculateAltitude(uint32_t time, uint32_t previousAltitude) {
 	// Look up the the trajectory ahead of the time and smooth out the
 	// altitude difference so the camera will not jump up/down in erratic manner
 	const uint32_t altitudeOffset = 60;
@@ -105,7 +89,7 @@ uint32_t calculateAltitude(float time, uint32_t previousAltitude) {
 	// Detect the highest point closely ahead of the path
 	for (uint32_t index = 0; index < 5; ++index) {
 		// Look up only few steps ahead
-		PairFloat camera          = infiniteSymbolPath(time);
+		PairFloat camera          = cameraLoop[time + index];
 		uint32_t  probingAltitude = altitudeOffset + VOXEL_MAP_HEIGHT[calculateMapOffset(camera.x, camera.y)];
 		if (maxAltitude < probingAltitude) {
 			maxAltitude = probingAltitude;
@@ -133,6 +117,9 @@ void renderScreen(PairFloat origin, float angle, int32_t altitude, int32_t pitch
     const int32_t        pitchStep   = (pitchEnd - pitchBegin) / WIDTH;
 
     int32_t zIncrement = FLOAT_TO_FIXED_POINT(1.0f); // The starting Z increment value
+
+//    float a = atan2f(696.999756f - 696.994324f, 518.156494f - 518.573486f);
+//    float b = (VOXEL_FULL_CIRCLE_IN_RAD / 4) - atan2f(696.999756f - 696.994324f, 518.156494f - 518.573486f);
 
 	for (int32_t z = VOXEL_CAMERA_START_Z; z < VOXEL_MAX_DRAW_DISTANCE; z = z + zIncrement) {
 		// Start from close by to far, but first few steps as they not visible
@@ -212,23 +199,29 @@ void renderScreen(PairFloat origin, float angle, int32_t altitude, int32_t pitch
 
 
 uint32_t voxelAnimationSingleLoop() {
-	PairFloat cameraNow = infiniteSymbolPath(0.0f);
-	PairFloat cameraNext;
-	float pointingToOld = 0.0f;
+	float  pointingToOld = 0.0f;
 	static uint32_t altitudeOld = 255;
+	static uint32_t loopCount = 0;
 
 	// Clean the buffers for the very first updates
 	cleanBuffer(buffer[0]);
 	cleanBuffer(buffer[1]);
 
+	if (0 == loopCount) {
+		uint32_t index = 0;
+		//982
+		for (float step = 0.0f; (step < VOXEL_FULL_CIRCLE_IN_RAD) && (index < VOXEL_FULL_CIRCLE_STEPS); step += VOXEL_ANIMATION_STEP, index++) {
+			cameraLoop[index] = infiniteSymbolPath(step);
+		}
+	}
+
 	frame = 0;
-	for (float step = 0.0f; step < VOXEL_FULL_CIRCLE_IN_RAD; step += VOXEL_ANIMATION_STEP) {
+	for (frame = 0; frame < VOXEL_FULL_CIRCLE_STEPS; frame++) {
 		cleanZbuffer();
-		uint32_t altitude = calculateAltitude(step, altitudeOld);
-		cameraNext = infiniteSymbolPath(step + VOXEL_ANIMATION_STEP);
+		uint32_t altitude = calculateAltitude(frame, altitudeOld);
 
 		// Following the curve, calculate angle of the camera where to point
-		float pointingTo = angleOfTwoPoints(cameraNow, cameraNext);
+		float pointingTo = angleOfTwoPoints(cameraLoop[frame], cameraLoop[(frame+1) % VOXEL_FULL_CIRCLE_STEPS]);
 
 		// Depending on old and current camera angle, estimated the roll
 		float roll = (pointingTo - pointingToOld) * VOXEL_VEHICLE_TILT_FACTOR;
@@ -236,7 +229,7 @@ uint32_t voxelAnimationSingleLoop() {
 		// Significantly amplify the estimated roll, convert it into fixed point in 2 steps
 		// because the first step can be compile time optimized and then the second one
 		// needs to be converted only once
-		renderScreen(cameraNow, pointingTo, altitude,
+		renderScreen(cameraLoop[frame], pointingTo, altitude,
 				FLOAT_TO_FIXED_POINT((HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR)) - FLOAT_TO_FIXED_POINT(roll),
 				FLOAT_TO_FIXED_POINT((HEIGHT / VOXEL_VEHICLE_HEIGHT_FACTOR)) + FLOAT_TO_FIXED_POINT(roll));
 
@@ -244,11 +237,10 @@ uint32_t voxelAnimationSingleLoop() {
 		oledUpdateScreenFromBuffer(buffer[frame%2],  WIDTH * HEIGHT);
 
 		// Store the values for the next iteration
-		cameraNow     = cameraNext;
 		pointingToOld = pointingTo;
 		altitudeOld   = altitude;
-		frame++;
 	}
+	loopCount++;
 
 	return frame;
 }

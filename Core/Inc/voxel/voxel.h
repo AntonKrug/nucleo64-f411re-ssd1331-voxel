@@ -47,6 +47,26 @@
 #define VOXEL_DEG_TO_RAD 0.0174533f         // 2*pi/360
 #define VOXEL_FULL_CIRCLE_IN_RAD 6.2831853f // lazy 2pi estimation
 
+#define VOXEL_FULL_CIRCLE_STEPS ((int)(VOXEL_FULL_CIRCLE_IN_RAD / VOXEL_ANIMATION_STEP))
+
+
+typedef struct {
+	int32_t x;
+	int32_t y;
+} Pair32;
+
+
+typedef struct {
+	int32_t x;
+	int32_t y;
+} PairFixedPoint;
+
+
+typedef struct {
+	float x;
+	float y;
+} PairFloat;
+
 
 uint32_t voxelAnimationSingleLoop();
 
