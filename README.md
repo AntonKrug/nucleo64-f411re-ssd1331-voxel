@@ -3,9 +3,7 @@
 Doing whole run on the voxel map (1571 frames) each time and measuring how many miliseconds it took (and calculating the average FPS), Debug configurations are slower but allow better debuging while Release configuration is using -Ofast and is significantly faster.
 What is bizzare that some improvements made it slower, yet when testing the most upto date Release candidate and undoing these improvements caused slow down by 7fps. So that looks like even when at that moment that change was not showing significant result when they combined together they were making measurable impact 
 
-- Pre-rendering path (Debug 28050ms 55fps, Release 10002ms 156fps)
-
-- Living dangerously and removing display sync blockers (Debug 0.3% faster 28079ms 55fps, Release 10043ms 156fps)
+- Living dangerously and removing display sync blockers (Debug 0.3% faster 28079ms, 55fps, 10043ms 156fps)
 
 - Hardcoding screen WIDTH (Debug 1.7% faster 28164ms 55fps, Release 3.3% faster 10043ms 156fps)   
 
