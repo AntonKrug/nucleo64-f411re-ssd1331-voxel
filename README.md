@@ -5,19 +5,19 @@ What is bizzare that some improvements made it slower, yet when testing the most
 
 | What changed | Debug time | Debug delta  | Debug FPS | Release time | Release delta | Release FPS | 
 | --- | --- | --- | --- | --- | --- | --- |
-| Living dangerously and removing display sync blockers | 28079ms | -0.3% | 55fps | 10043ms | 0% | 156fps|
-| Hardcoding screen WIDTH | 28164ms | -1.7% | 55fps | 10043ms |-3.3% | 156fps|
-| Using more fixed-point calculations | 28660ms | -37% | 54fps | 10383ms | -7.7% | 151fps|
-| Removing redudant multiplication (release version already did that optimalisation in the toolchain) | 39222ms | -0.07% | 40fps | 11186ms |  0% | 140fps| 
-| Fixed-point calculations | 39248ms | -0.3% | 40fps | 11186ms | -6% | 140fps|
-| DMA skybox clean up | 39371ms | -2.7% | 39fps | 11902ms | | 131fps|
-| Particial skybox cleanup | 40471ms | -2.4% | 38fps | 12230ms | | 128fps|
-| Better DMA and double buffering | 41447ms | -0.8% | 37fps | 12762ms | | 123fps|
-| Badly done DMA transfers | 41797ms | +3.8% | 37fps | | | |
-| Instead of adding whole MAP_SIZE on each calculation pre-hardcode it before so less additions will have to be made | 43386ms | | | | | |
-| Aligning buffer does slow down, even when it shouldn't | 43384ms | +0.018% | | | | |
-| Vertical increments suits the renderer more (see below) | 43376ms | -0.3% | | | | |
-| Horizontal increment screen | 43507ms | | 36fps| | | |
+| Living dangerously and removing display sync blockers                                                              | 28079ms | -0.3%   | 55fps | 10043ms | 0%    | 156fps|
+| Hardcoding screen WIDTH                                                                                            | 28164ms | -1.7%   | 55fps | 10043ms | -3.3% | 156fps|
+| Using more fixed-point calculations                                                                                | 28660ms | -37%    | 54fps | 10383ms | -7.7% | 151fps|
+| Removing redudant multiplication (release version already did that optimalisation in the toolchain)                | 39222ms | -0.07%  | 40fps | 11186ms |  0%   | 140fps| 
+| Fixed-point calculations                                                                                           | 39248ms | -0.3%   | 40fps | 11186ms | -6%   | 140fps|
+| DMA skybox clean up                                                                                                | 39371ms | -2.7%   | 39fps | 11902ms | -2.6% | 131fps|
+| Particial skybox cleanup                                                                                           | 40471ms | -2.4%   | 38fps | 12230ms | -4.2% | 128fps|
+| Better DMA and double buffering                                                                                    | 41447ms | -0.8%   | 37fps | 12762ms |       | 123fps|
+| Badly done DMA transfers (the overhead is not making it as efficient as it could be)                               | 41797ms | -3.8%   | 37fps | | | |
+| Instead of adding whole MAP_SIZE on each calculation pre-hardcode it before so less additions will have to be made | 43386ms | +0.004% | 36fps | | | |
+| Aligning buffer does slow down, even when it shouldn't                                                             | 43384ms | +0.018% | 36fps | | | |
+| Vertical increments suits the renderer more (see below)                                                            | 43376ms | -0.3%   | 36fps | | | |
+| Horizontal increment screen                                                                                        | 43507ms |         | 36fps | | | |
 
 ## Vertical incrementing
   - It does align better to the render engine which often writes vertical lines
